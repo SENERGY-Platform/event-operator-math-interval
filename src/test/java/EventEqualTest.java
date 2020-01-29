@@ -1,0 +1,235 @@
+/*
+ * Copyright 2020 InfAI (CC SES)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import com.sun.net.httpserver.HttpServer;
+import org.infai.seits.sepl.operators.Message;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+import org.junit.Assert;
+import org.junit.Test;
+
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.HashMap;
+import java.util.Map;
+
+
+public class EventEqualTest {
+    public static boolean called = false;
+    private static Object processVariable = null;
+
+    private Object jsonNormalize(Object in) throws ParseException {
+        Map<String, Object> wrapper = new HashMap<String, Object>();
+        wrapper.put("value", in);
+        JSONObject temp = new JSONObject(wrapper);
+        Object candidate = ((JSONObject)(new JSONParser().parse(temp.toJSONString()))).get("value");
+        if(candidate instanceof Long){
+            candidate = Double.valueOf((Long)candidate);
+        }
+        if(candidate instanceof String){
+            candidate = Double.valueOf((String)candidate);
+        }
+        return candidate;
+    }
+
+    private void test(String interval, Object messageValue, boolean expectedToTrigger) throws IOException, java.text.ParseException {
+        EventEqualTest.called = false;
+        HttpServer server = TriggerServerMock.create(inputStream -> {
+            JSONParser jsonParser = new JSONParser();
+            try {
+                JSONObject jsonObject = (JSONObject)jsonParser.parse(new InputStreamReader(inputStream, "UTF-8"));
+                if(
+                        jsonObject.containsKey("localVariables")
+                        && ((JSONObject)jsonObject.get("localVariables")).containsKey("event")
+                        && ((JSONObject)((JSONObject)jsonObject.get("localVariables")).get("event")).containsKey("value")
+                ){
+                    EventEqualTest.called = true;
+                    EventEqualTest.processVariable = ((JSONObject)((JSONObject)jsonObject.get("localVariables")).get("event")).get("value");
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+        EventMathInterval events = new EventMathInterval(interval, "http://localhost:"+server.getAddress().getPort()+"/endpoint", "test");
+        Message msg = TestMessageProvider.getTestMessage(messageValue);
+        events.config(msg);
+        events.run(msg);
+        server.stop(0);
+        Assert.assertEquals(EventEqualTest.called, expectedToTrigger);
+        if(expectedToTrigger){
+            try {
+                Object a = jsonNormalize(EventEqualTest.processVariable);
+                Object b = jsonNormalize(messageValue);
+                Assert.assertEquals(a, b);
+            } catch (ParseException e) {
+                Assert.fail(e.getMessage());
+            }
+        }
+    }
+
+    @Test
+    public void testOpenInt() throws IOException, java.text.ParseException {
+        test("(0, 8)", -1, false);
+        test("(0, 8)", 0, false);
+        test("(0, 8)", 1, true);
+        test("(0, 8)", 2, true);
+        test("(0, 8)", 3, true);
+        test("(0, 8)", 4, true);
+        test("(0, 8)", 5, true);
+        test("(0, 8)", 6, true);
+        test("(0, 8)", 7, true);
+        test("(0, 8)", 8, false);
+        test("(0, 8)", 9, false);
+    }
+
+    @Test
+    public void testOpen2Int() throws IOException, java.text.ParseException {
+        test("]0, 8[", -1, false);
+        test("]0, 8[", 0, false);
+        test("]0, 8[", 1, true);
+        test("]0, 8[", 2, true);
+        test("]0, 8[", 3, true);
+        test("]0, 8[", 4, true);
+        test("]0, 8[", 5, true);
+        test("]0, 8[", 6, true);
+        test("]0, 8[", 7, true);
+        test("]0, 8[", 8, false);
+        test("]0, 8[", 9, false);
+    }
+
+    @Test
+    public void testClosedInt() throws IOException, java.text.ParseException {
+        test("[0, 8]", -1, false);
+        test("[0, 8]", 0, true);
+        test("[0, 8]", 1, true);
+        test("[0, 8]", 2, true);
+        test("[0, 8]", 3, true);
+        test("[0, 8]", 4, true);
+        test("[0, 8]", 5, true);
+        test("[0, 8]", 6, true);
+        test("[0, 8]", 7, true);
+        test("[0, 8]", 8, true);
+        test("[0, 8]", 9, false);
+    }
+
+    @Test
+    public void testClosedFloat() throws IOException, java.text.ParseException {
+        test("[1.3, 2.4]", 0, false);
+        test("[1.3, 2.4]", 1, false);
+        test("[1.3, 2.4]", 1.2, false);
+        test("[1.3, 2.4]", 1.3, true);
+        test("[1.3, 2.4]", 1.4, true);
+        test("[1.3, 2.4]", 2, true);
+        test("[1.3, 2.4]", 2.4, true);
+        test("[1.3, 2.4]", 2.5, false);
+        test("[1.3, 2.4]", 3, false);
+        test("[1.3, 2.4]", 4, false);
+        test("[1.3, 2.4]", 5, false);
+    }
+
+    @Test
+    public void testOpenFloat() throws IOException, java.text.ParseException {
+        test("(1.3, 2.4)", 0, false);
+        test("(1.3, 2.4)", 1, false);
+        test("(1.3, 2.4)", 1.2, false);
+        test("(1.3, 2.4)", 1.3, false);
+        test("(1.3, 2.4)", 1.4, true);
+        test("(1.3, 2.4)", 2, true);
+        test("(1.3, 2.4)", 2.4, false);
+        test("(1.3, 2.4)", 2.5, false);
+        test("(1.3, 2.4)", 3, false);
+        test("(1.3, 2.4)", 4, false);
+        test("(1.3, 2.4)", 5, false);
+    }
+
+    @Test
+    public void testOpen2Float() throws IOException, java.text.ParseException {
+        test("]1.3, 2.4[", 0, false);
+        test("]1.3, 2.4[", 1, false);
+        test("]1.3, 2.4[", 1.2, false);
+        test("]1.3, 2.4[", 1.3, false);
+        test("]1.3, 2.4[", 1.4, true);
+        test("]1.3, 2.4[", 2, true);
+        test("]1.3, 2.4[", 2.4, false);
+        test("]1.3, 2.4[", 2.5, false);
+        test("]1.3, 2.4[", 3, false);
+        test("]1.3, 2.4[", 4, false);
+        test("]1.3, 2.4[", 5, false);
+    }
+
+    @Test
+    public void testOpenInfinity() throws IOException, java.text.ParseException {
+        test("(*, *)", 0, true);
+        test("(*, *)", 1, true);
+        test("(*, *)", 1.2, true);
+        test("(*, *)", 1.3, true);
+        test("(*, *)", 1.4, true);
+        test("(*, *)", 2, true);
+        test("(*, *)", 2.4, true);
+        test("(*, *)", 2.5, true);
+        test("(*, *)", 3, true);
+        test("(*, *)", 4, true);
+        test("(*, *)", 5, true);
+    }
+
+    @Test
+    public void testOpen2Infinity() throws IOException, java.text.ParseException {
+        test("]*, *[", 0, true);
+        test("]*, *[", 1, true);
+        test("]*, *[", 1.2, true);
+        test("]*, *[", 1.3, true);
+        test("]*, *[", 1.4, true);
+        test("]*, *[", 2, true);
+        test("]*, *[", 2.4, true);
+        test("]*, *[", 2.5, true);
+        test("]*, *[", 3, true);
+        test("]*, *[", 4, true);
+        test("]*, *[", 5, true);
+    }
+
+    @Test
+    public void testClosedInfinity() throws IOException, java.text.ParseException {
+        test("[*, *]", 0, true);
+        test("[*, *]", 1, true);
+        test("[*, *]", 1.2, true);
+        test("[*, *]", 1.3, true);
+        test("[*, *]", 1.4, true);
+        test("[*, *]", 2, true);
+        test("[*, *]", 2.4, true);
+        test("[*, *]", 2.5, true);
+        test("[*, *]", 3, true);
+        test("[*, *]", 4, true);
+        test("[*, *]", 5, true);
+    }
+
+    @Test
+    public void testString() throws IOException, java.text.ParseException {
+        test("[*, *]", "0", true);
+        test("[*, *]", "1", true);
+        test("[*, *]", "1.2", true);
+        test("[*, *]", "1.3", true);
+        test("[*, *]", "1.4", true);
+        test("[*, *]", "2", true);
+        test("[*, *]", "2.4", true);
+        test("[*, *]", "2.5", true);
+        test("[*, *]", "3", true);
+        test("[*, *]", "4", true);
+        test("[*, *]", "5", true);
+
+        test("[*, *]", "foo", false);
+    }
+}
