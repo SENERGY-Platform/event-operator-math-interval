@@ -24,8 +24,10 @@ public class Operator {
     public static void main(String[] args) throws ParseException {
         Stream stream  = new Stream();
         Config config = new Config();
+        String deprecatedValue = config.getConfigValue("interval", "(*,*)");
+        String value = config.getConfigValue("value", deprecatedValue);
         EventMathInterval filter = new EventMathInterval(
-                config.getConfigValue("interval", "(*,*)"),
+                value,
                 config.getConfigValue("url", ""),
                 config.getConfigValue("eventId", "")
         );
