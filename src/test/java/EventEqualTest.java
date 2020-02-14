@@ -48,7 +48,7 @@ public class EventEqualTest {
 
     private void test(String interval, Object messageValue, boolean expectedToTrigger) throws IOException, java.text.ParseException {
         EventEqualTest.called = false;
-        HttpServer server = TriggerServerMock.create(inputStream -> {
+        HttpServer triggerServer = TriggerServerMock.create(inputStream -> {
             JSONParser jsonParser = new JSONParser();
             try {
                 JSONObject jsonObject = (JSONObject)jsonParser.parse(new InputStreamReader(inputStream, "UTF-8"));
@@ -64,11 +64,14 @@ public class EventEqualTest {
                 e.printStackTrace();
             }
         });
-        EventMathInterval events = new EventMathInterval(interval, "http://localhost:"+server.getAddress().getPort()+"/endpoint", "test");
+        HttpServer converterServer = ConverterServerMock.create("/inCharacteristic/outCharacteristic");
+        Converter converter = new Converter("http://localhost:"+converterServer.getAddress().getPort(), "inCharacteristic", "outCharacteristic");
+        EventMathInterval events = new EventMathInterval(interval, "http://localhost:"+triggerServer.getAddress().getPort()+"/endpoint", "test", converter);
         Message msg = TestMessageProvider.getTestMessage(messageValue);
         events.config(msg);
         events.run(msg);
-        server.stop(0);
+        triggerServer.stop(0);
+        converterServer.stop(0);
         Assert.assertEquals(EventEqualTest.called, expectedToTrigger);
         if(expectedToTrigger){
             try {

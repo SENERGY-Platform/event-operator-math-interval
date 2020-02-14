@@ -32,11 +32,13 @@ public class EventMathInterval implements OperatorInterface {
     private Interval interval;
     private String url;
     private String eventId;
+    private Converter converter;
 
-    public EventMathInterval(String interval, String url, String eventId) throws ParseException {
+    public EventMathInterval(String interval, String url, String eventId, Converter converter) throws ParseException {
         this.interval = new Interval(interval);
         this.url = url;
         this.eventId = eventId;
+        this.converter = converter;
     }
 
     @Override
@@ -57,19 +59,18 @@ public class EventMathInterval implements OperatorInterface {
 
 
     private void trigger(Input input){
-        JSONObject json = new JSONObject()
-                .put("messageName", this.eventId)
-                .put("all", true)
-                .put("resultEnabled", true)
-                .put("localVariables", new JSONObject()
-                        .put("event", new JSONObject()
-                                .put("value", input.getValue())
-                        )
-                );
-
         CloseableHttpClient httpClient = HttpClientBuilder.create().build();
-
         try {
+            Object value = this.converter.convert(input.getValue());
+            JSONObject json = new JSONObject()
+                    .put("messageName", this.eventId)
+                    .put("all", true)
+                    .put("resultEnabled", true)
+                    .put("localVariables", new JSONObject()
+                            .put("event", new JSONObject()
+                                    .put("value", value)
+                            )
+                    );
             HttpPost request = new HttpPost(this.url);
             StringEntity params = new StringEntity(json.toString());
             request.addHeader("content-type", "application/json");
@@ -77,6 +78,7 @@ public class EventMathInterval implements OperatorInterface {
             CloseableHttpResponse resp = httpClient.execute(request);
             resp.close();
         } catch (Exception e) {
+            System.err.println(e.getMessage());
             e.printStackTrace();
         } finally {
             try {

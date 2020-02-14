@@ -26,10 +26,17 @@ public class Operator {
         Config config = new Config();
         String deprecatedValue = config.getConfigValue("interval", "(*,*)");
         String value = config.getConfigValue("value", deprecatedValue);
+        String triggerUrl = config.getConfigValue("url", "");
+        String eventId = config.getConfigValue("eventId", "");
+        String converterUrl = config.getConfigValue("converterUrl", "");
+        String convertFrom = config.getConfigValue("convertFrom", "");
+        String convertTo = config.getConfigValue("convertTo", "");
+        Converter converter = new Converter(converterUrl, convertFrom, convertTo);
         EventMathInterval filter = new EventMathInterval(
                 value,
-                config.getConfigValue("url", ""),
-                config.getConfigValue("eventId", "")
+                triggerUrl,
+                eventId,
+                converter
         );
         stream.start(filter);
     }
