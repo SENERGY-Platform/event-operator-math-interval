@@ -31,7 +31,12 @@ public class Operator {
         String converterUrl = config.getConfigValue("converterUrl", "");
         String convertFrom = config.getConfigValue("convertFrom", "");
         String convertTo = config.getConfigValue("convertTo", "");
-        Converter converter = new Converter(converterUrl, convertFrom, convertTo);
+        Converter converter;
+        if (!converterUrl.equals("") && !convertFrom.equals("") && !convertTo.equals("")){
+            converter = new Converter(converterUrl, convertFrom, convertTo);
+        }else{
+            converter = null;
+        }
         EventMathInterval filter = new EventMathInterval(
                 value,
                 triggerUrl,

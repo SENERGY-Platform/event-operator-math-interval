@@ -61,7 +61,10 @@ public class EventMathInterval implements OperatorInterface {
     private void trigger(Input input){
         CloseableHttpClient httpClient = HttpClientBuilder.create().build();
         try {
-            Object value = this.converter.convert(input.getValue());
+            Object value = input.getValue();
+            if(this.converter != null){
+                value = this.converter.convert(value);
+            }
             JSONObject json = new JSONObject()
                     .put("messageName", this.eventId)
                     .put("all", true)
