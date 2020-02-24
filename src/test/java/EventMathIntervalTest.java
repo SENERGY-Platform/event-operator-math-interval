@@ -28,7 +28,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 
-public class EventEqualTest {
+public class EventMathIntervalTest {
     public static boolean called = false;
     private static Object processVariable = null;
 
@@ -47,7 +47,7 @@ public class EventEqualTest {
     }
 
     private void test(String interval, Object messageValue, boolean expectedToTrigger) throws IOException, java.text.ParseException {
-        EventEqualTest.called = false;
+        EventMathIntervalTest.called = false;
         HttpServer triggerServer = TriggerServerMock.create(inputStream -> {
             JSONParser jsonParser = new JSONParser();
             try {
@@ -57,8 +57,8 @@ public class EventEqualTest {
                         && ((JSONObject)jsonObject.get("localVariables")).containsKey("event")
                         && ((JSONObject)((JSONObject)jsonObject.get("localVariables")).get("event")).containsKey("value")
                 ){
-                    EventEqualTest.called = true;
-                    EventEqualTest.processVariable = ((JSONObject)((JSONObject)jsonObject.get("localVariables")).get("event")).get("value");
+                    EventMathIntervalTest.called = true;
+                    EventMathIntervalTest.processVariable = ((JSONObject)((JSONObject)jsonObject.get("localVariables")).get("event")).get("value");
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -72,10 +72,10 @@ public class EventEqualTest {
         events.run(msg);
         triggerServer.stop(0);
         converterServer.stop(0);
-        Assert.assertEquals(EventEqualTest.called, expectedToTrigger);
+        Assert.assertEquals(EventMathIntervalTest.called, expectedToTrigger);
         if(expectedToTrigger){
             try {
-                Object a = jsonNormalize(EventEqualTest.processVariable);
+                Object a = jsonNormalize(EventMathIntervalTest.processVariable);
                 Object b = jsonNormalize(messageValue);
                 Assert.assertEquals(a, b);
             } catch (ParseException e) {
