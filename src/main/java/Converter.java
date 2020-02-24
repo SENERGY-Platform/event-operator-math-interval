@@ -29,22 +29,32 @@ public class Converter {
     private String url;
     private String from;
     private String to;
+    private boolean used;
 
     public Converter(String url, String from, String to){
         this.url = url;
         this.from = from;
         this.to = to;
+        if(this.url.equals("") || this.from.equals("") || this.to.equals("")){
+            this.used = false;
+        }else{
+            this.used = true;
+        }
     }
 
     public Object convert(Object in) throws IOException {
-        StringEntity entity = new StringEntity(this.objToJsonStr(in));
-        CloseableHttpClient httpClient = HttpClientBuilder.create().build();
-        HttpPost request = new HttpPost(this.url+"/"+this.from+"/"+this.to);
-        request.setEntity(entity);
-        request.addHeader("content-type", "application/json");
-        CloseableHttpResponse resp = httpClient.execute(request);
-        String respStr = new BasicResponseHandler().handleResponse(resp);
-        return this.jsonStrToObject(respStr);
+        if(this.used) {
+            StringEntity entity = new StringEntity(this.objToJsonStr(in));
+            CloseableHttpClient httpClient = HttpClientBuilder.create().build();
+            HttpPost request = new HttpPost(this.url + "/" + this.from + "/" + this.to);
+            request.setEntity(entity);
+            request.addHeader("content-type", "application/json");
+            CloseableHttpResponse resp = httpClient.execute(request);
+            String respStr = new BasicResponseHandler().handleResponse(resp);
+            return this.jsonStrToObject(respStr);
+        }else{
+            return in;
+        }
     }
 
     private String objToJsonStr(Object in) throws IOException {
@@ -56,7 +66,11 @@ public class Converter {
 
     private Object jsonStrToObject(String in) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
-        StringWriter writer = new StringWriter();
         return mapper.readValue(in, Object.class);
+    }
+
+
+    public boolean isUsed() {
+        return used;
     }
 }

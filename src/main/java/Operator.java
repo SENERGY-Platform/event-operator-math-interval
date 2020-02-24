@@ -20,7 +20,6 @@ import org.infai.seits.sepl.operators.Stream;
 import java.text.ParseException;
 
 public class Operator {
-
     public static void main(String[] args) throws ParseException {
         Stream stream  = new Stream();
         Config config = new Config();
@@ -31,12 +30,7 @@ public class Operator {
         String converterUrl = config.getConfigValue("converterUrl", "");
         String convertFrom = config.getConfigValue("convertFrom", "");
         String convertTo = config.getConfigValue("convertTo", "");
-        Converter converter;
-        if (!converterUrl.equals("") && !convertFrom.equals("") && !convertTo.equals("")){
-            converter = new Converter(converterUrl, convertFrom, convertTo);
-        }else{
-            converter = null;
-        }
+        Converter converter = new Converter(converterUrl, convertFrom, convertTo);
         EventMathInterval filter = new EventMathInterval(
                 value,
                 triggerUrl,
