@@ -35,5 +35,5 @@ jobs:
           platforms: linux/amd64
           push: true
           tags: |
-            smartenergyplatform/event-operator-unequal:prod
-            ghcr.io/senergy-platform/event-operator-unequal:prod
+            smartenergyplatform/event-operator-math-interval:prod
+            ghcr.io/senergy-platform/event-operator-math-interval:prod
