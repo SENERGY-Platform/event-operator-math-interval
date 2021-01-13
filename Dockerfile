@@ -1,6 +1,3 @@
-FROM maven:3.5-jdk-8-onbuild-alpine
-CMD ["java","-jar","/usr/src/app/target/event-math-interval-jar-with-dependencies.jar"]
-
 FROM maven:3.6-openjdk-11-slim as builder
 ADD src /usr/src/app/src
 ADD pom.xml /usr/src/app
