@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
-import org.infai.seits.sepl.operators.Config;
-import org.infai.seits.sepl.operators.Stream;
+
+
+import org.infai.ses.senergy.operators.Config;
+import org.infai.ses.senergy.operators.Stream;
 
 import java.text.ParseException;
 

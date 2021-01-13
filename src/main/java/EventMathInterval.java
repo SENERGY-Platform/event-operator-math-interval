@@ -20,16 +20,17 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.infai.seits.sepl.operators.Input;
-import org.infai.seits.sepl.operators.Message;
-import org.infai.seits.sepl.operators.OperatorInterface;
+import org.infai.ses.senergy.exceptions.NoValueException;
+import org.infai.ses.senergy.operators.BaseOperator;
+import org.infai.ses.senergy.operators.Input;
+import org.infai.ses.senergy.operators.Message;
 import org.json.JSONObject;
 
 import java.io.IOException;
 import java.text.ParseException;
 
 
-public class EventMathInterval implements OperatorInterface {
+public class EventMathInterval extends BaseOperator {
     private Interval interval;
     private String url;
     private String eventId;
@@ -55,7 +56,12 @@ public class EventMathInterval implements OperatorInterface {
     }
 
     private boolean operator(Input input){
-        return this.interval.check(input.getValue());
+        try {
+            return this.interval.check(input.getValue());
+        } catch (NoValueException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
 
@@ -95,7 +101,8 @@ public class EventMathInterval implements OperatorInterface {
     }
 
     @Override
-    public void config(Message message) {
+    public Message configMessage(Message message) {
         message.addInput("value");
+        return message;
     }
 }
