@@ -22,6 +22,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.infai.ses.senergy.exceptions.NoValueException;
 import org.infai.ses.senergy.operators.BaseOperator;
+import org.infai.ses.senergy.operators.FlexInput;
 import org.infai.ses.senergy.operators.Input;
 import org.infai.ses.senergy.operators.Message;
 import org.json.JSONObject;
@@ -46,7 +47,7 @@ public class EventMathInterval extends BaseOperator {
     @Override
     public void run(Message message) {
         try{
-            Input input = message.getInput("value");
+            FlexInput input = message.getFlexInput("value");
             if(this.operator(input)){
                this.trigger(input);
             }
@@ -55,7 +56,7 @@ public class EventMathInterval extends BaseOperator {
         }
     }
 
-    private boolean operator(Input input){
+    private boolean operator(FlexInput input){
         try {
             return this.interval.check(input.getValue());
         } catch (NoValueException e) {
@@ -65,7 +66,7 @@ public class EventMathInterval extends BaseOperator {
     }
 
 
-    private void trigger(Input input){
+    private void trigger(FlexInput input){
         RequestConfig requestConfig = RequestConfig.custom().setConnectTimeout(10 * 1000).build();
         CloseableHttpClient httpClient = HttpClientBuilder.create().setDefaultRequestConfig(requestConfig).build();
         try {
@@ -102,7 +103,7 @@ public class EventMathInterval extends BaseOperator {
 
     @Override
     public Message configMessage(Message message) {
-        message.addInput("value");
+        message.addFlexInput("value");
         return message;
     }
 }
