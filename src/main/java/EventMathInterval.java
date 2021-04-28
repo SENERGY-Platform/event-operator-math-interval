@@ -48,32 +48,36 @@ public class EventMathInterval extends BaseOperator {
     public void run(Message message) {
         try{
             FlexInput input = message.getFlexInput("value");
-            if(this.operator(input)){
-               this.trigger(input);
+            Object value = this.getValueOfInput(input);
+            if(this.operator(value)){
+               this.trigger(value);
             }
         }catch (Exception e){
             e.printStackTrace();
         }
     }
 
-    private boolean operator(FlexInput input){
-        try {
-            return this.interval.check(input.getValue());
-        } catch (NoValueException e) {
-            e.printStackTrace();
+    private Object getValueOfInput(FlexInput input) throws IOException, NoValueException {
+        if(this.converter != null){
+            return this.converter.convert(input.getValue());
+        } else {
+            return input.getValue();
+        }
+    }
+
+    private boolean operator(Object value){
+        if (value instanceof Double) {
+            return this.interval.check((double)value);
+        } else {
             return false;
         }
     }
 
 
-    private void trigger(FlexInput input){
+    private void trigger(Object value){
         RequestConfig requestConfig = RequestConfig.custom().setConnectTimeout(10 * 1000).build();
         CloseableHttpClient httpClient = HttpClientBuilder.create().setDefaultRequestConfig(requestConfig).build();
         try {
-            Object value = input.getValue();
-            if(this.converter != null){
-                value = this.converter.convert(value);
-            }
             JSONObject json = new JSONObject()
                     .put("messageName", this.eventId)
                     .put("all", true)
