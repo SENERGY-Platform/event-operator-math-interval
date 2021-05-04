@@ -38,6 +38,20 @@ public class ConverterServerMock {
         return httpServer;
     }
 
+    public static HttpServer createWithResponse(String expectedEndpoint, String resp) throws IOException {
+        HttpServer httpServer = HttpServer.create(new InetSocketAddress(0), 0);
+        httpServer.createContext(expectedEndpoint, new HttpHandler() {
+            public void handle(HttpExchange exchange) throws IOException {
+                byte[] response = resp.getBytes();
+                exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, response.length);
+                exchange.getResponseBody().write(response);
+                exchange.close();
+            }
+        });
+        httpServer.start();
+        return httpServer;
+    }
+
     private static String readString(InputStream stream) throws IOException {
         InputStreamReader reader = new InputStreamReader(stream, "UTF-8");
         BufferedReader buffer = new BufferedReader(reader);

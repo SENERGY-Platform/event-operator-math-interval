@@ -59,7 +59,7 @@ public class EventMathInterval extends BaseOperator {
 
     private Object getValueOfInput(FlexInput input) throws IOException, NoValueException {
         if(this.converter != null){
-            return this.converter.convert(input.getValue());
+            return this.converter.convert(input, input.getValue());
         } else {
             return input.getValue();
         }
@@ -68,9 +68,11 @@ public class EventMathInterval extends BaseOperator {
     private boolean operator(Object value){
         if (value instanceof Double) {
             return this.interval.check((double)value);
-        } else {
-            return false;
         }
+        if (value instanceof Integer) {
+            return this.interval.check(Double.valueOf((int)value));
+        }
+        return false;
     }
 
 
