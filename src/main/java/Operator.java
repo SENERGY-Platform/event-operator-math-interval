@@ -33,8 +33,11 @@ public class Operator {
         String convertFrom = config.getConfigValue("convertFrom", "");
         String convertTo = config.getConfigValue("convertTo", "");
         String topicToPathAndCharacteristic = config.getConfigValue("topicToPathAndCharacteristic", "");
+        String userToken = config.getConfigValue("userToken", "");
+
         Converter converter = new Converter(converterUrl, convertFrom, convertTo, topicToPathAndCharacteristic);
         EventMathInterval filter = new EventMathInterval(
+                userToken,
                 value,
                 triggerUrl,
                 eventId,

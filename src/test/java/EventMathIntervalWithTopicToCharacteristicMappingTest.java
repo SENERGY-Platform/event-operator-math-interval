@@ -75,7 +75,7 @@ public class EventMathIntervalWithTopicToCharacteristicMappingTest {
 
         HttpServer converterServer = ConverterServerMock.createWithResponse("/inCharacteristic/outCharacteristic", new Gson().toJson(messageValue));
         Converter converter = new Converter("http://localhost:"+converterServer.getAddress().getPort(), "", "outCharacteristic", topicToPathAndCharacteristic);
-        EventMathInterval events = new EventMathInterval(interval, "http://localhost:"+triggerServer.getAddress().getPort()+"/endpoint", "test", converter);
+        EventMathInterval events = new EventMathInterval("", interval, "http://localhost:"+triggerServer.getAddress().getPort()+"/endpoint", "test", converter);
         Config config = new Config(new JSONHelper().parseFile("config.json").toString());
         ConfigProvider.setConfig(config);
         MessageModel model = new MessageModel();
