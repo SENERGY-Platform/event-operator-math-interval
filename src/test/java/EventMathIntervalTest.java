@@ -71,7 +71,8 @@ public class EventMathIntervalTest {
             }
         });
         HttpServer converterServer = ConverterServerMock.create("/inCharacteristic/outCharacteristic");
-        Converter converter = new Converter("http://localhost:"+converterServer.getAddress().getPort(), "inCharacteristic", "outCharacteristic");
+        String mockUrl = "http://localhost:"+converterServer.getAddress().getPort();
+        Converter converter = new Converter(mockUrl, mockUrl, "inCharacteristic", "outCharacteristic");
         EventMathInterval events = new EventMathInterval("", interval, "http://localhost:"+triggerServer.getAddress().getPort()+"/endpoint", "test", converter);
         Config config = new Config(new JSONHelper().parseFile("config.json").toString());
         ConfigProvider.setConfig(config);

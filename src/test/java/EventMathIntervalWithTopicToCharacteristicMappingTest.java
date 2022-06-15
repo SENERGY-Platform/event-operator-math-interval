@@ -39,6 +39,7 @@ public class EventMathIntervalWithTopicToCharacteristicMappingTest {
     public static boolean called = false;
     private static Object processVariable = null;
     private static String topicToPathAndCharacteristic = "{\"test\":[{\"json_path\":\"\",\"characteristic_id\":\"inCharacteristic\"}]}";
+    private static String castExtensions = "[{\"from\":\"foo\",\"to\":\"bar\",\"distance\":0,\"formula\":\"42\",\"placeholder_name\":\"\"}]";
 
     private Object jsonNormalize(Object in) throws ParseException {
         Map<String, Object> wrapper = new HashMap<String, Object>();
@@ -74,7 +75,8 @@ public class EventMathIntervalWithTopicToCharacteristicMappingTest {
         });
 
         HttpServer converterServer = ConverterServerMock.createWithResponse("/inCharacteristic/outCharacteristic", new Gson().toJson(messageValue));
-        Converter converter = new Converter("http://localhost:"+converterServer.getAddress().getPort(), "", "outCharacteristic", topicToPathAndCharacteristic);
+        String mockUrl = "http://localhost:"+converterServer.getAddress().getPort();
+        Converter converter = new Converter(mockUrl, mockUrl, "", "outCharacteristic", topicToPathAndCharacteristic, castExtensions);
         EventMathInterval events = new EventMathInterval("", interval, "http://localhost:"+triggerServer.getAddress().getPort()+"/endpoint", "test", converter);
         Config config = new Config(new JSONHelper().parseFile("config.json").toString());
         ConfigProvider.setConfig(config);

@@ -30,12 +30,14 @@ public class Operator {
         String triggerUrl = config.getConfigValue("url", "");
         String eventId = config.getConfigValue("eventId", "");
         String converterUrl = config.getConfigValue("converterUrl", "");
+        String extendedConverterUrl = config.getConfigValue("extendedConverterUrl", "");
         String convertFrom = config.getConfigValue("convertFrom", "");
         String convertTo = config.getConfigValue("convertTo", "");
         String topicToPathAndCharacteristic = config.getConfigValue("topicToPathAndCharacteristic", "");
+        String castExtension = config.getConfigValue("castExtensions", "");
         String userToken = config.getConfigValue("userToken", "");
 
-        Converter converter = new Converter(converterUrl, convertFrom, convertTo, topicToPathAndCharacteristic);
+        Converter converter = new Converter(extendedConverterUrl, converterUrl, convertFrom, convertTo, topicToPathAndCharacteristic, castExtension);
         EventMathInterval filter = new EventMathInterval(
                 userToken,
                 value,
