@@ -37,7 +37,20 @@ public class Operator {
         String castExtension = config.getConfigValue("castExtensions", "");
         String userToken = config.getConfigValue("userToken", "");
 
-        Converter converter = new Converter(extendedConverterUrl, converterUrl, convertFrom, convertTo, topicToPathAndCharacteristic, castExtension);
+        String marshallerUrl = config.getConfigValue("marshallerUrl", "");
+        String path = config.getConfigValue("path", "");
+        String functionId = config.getConfigValue("functionId", "");
+        String aspectNodeId = config.getConfigValue("aspectNodeId", "");
+        String targetCharacteristicId = config.getConfigValue("targetCharacteristicId", "");
+        String topicToServiceId = config.getConfigValue("topicToServiceId", "");
+
+        ConverterInterface converter;
+        if(marshallerUrl.equals("")) {
+            converter = new Converter(extendedConverterUrl, converterUrl, convertFrom, convertTo, topicToPathAndCharacteristic, castExtension);
+        } else {
+            converter = new Marshaller(marshallerUrl, userToken, functionId, aspectNodeId, path, targetCharacteristicId, topicToServiceId);
+        }
+
         EventMathInterval filter = new EventMathInterval(
                 userToken,
                 value,

@@ -35,10 +35,10 @@ public class EventMathInterval extends BaseOperator {
     private Interval interval;
     private String url;
     private String eventId;
-    private Converter converter;
+    private ConverterInterface converter;
     private String userToken;
 
-    public EventMathInterval(String userToken,String interval, String url, String eventId, Converter converter) throws ParseException {
+    public EventMathInterval(String userToken,String interval, String url, String eventId, ConverterInterface converter) throws ParseException {
         this.interval = new Interval(interval);
         this.url = url;
         this.eventId = eventId;
@@ -59,7 +59,7 @@ public class EventMathInterval extends BaseOperator {
         }
     }
 
-    private Object getValueOfInput(FlexInput input) throws IOException, NoValueException {
+    private Object getValueOfInput(FlexInput input) throws Exception {
         if(this.converter != null){
             return this.converter.convert(input, input.getValue());
         } else {
